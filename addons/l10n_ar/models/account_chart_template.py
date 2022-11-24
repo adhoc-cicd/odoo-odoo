@@ -71,3 +71,12 @@ class AccountChartTemplate(models.Model):
             company.account_purchase_tax_id = self.env['account.tax']
 
         return res
+
+    @api.model
+    def _get_third_party_checks_country_codes(self):
+        """ Return the list of country codes for the countries where third party checks journals should be created
+        when installing the COA"""
+        res = ["AR"]
+        if self.sudo().env.ref('base.module_l10n_latam_check').state == 'installed':
+            res += super()._get_third_party_checks_country_codes()
+        return res
