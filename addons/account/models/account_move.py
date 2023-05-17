@@ -770,16 +770,17 @@ class AccountMove(models.Model):
             move.fiscal_position_id = self.env['account.fiscal.position'].with_company(move.company_id)._get_fiscal_position(
                 move.partner_id, delivery=delivery_partner)
 
-    @api.depends('bank_partner_id')
+    @api.depends('bank_partner_id', 'company_id')
     def _compute_partner_bank_id(self):
         for move in self:
             bank_ids = move.bank_partner_id.bank_ids.filtered(
                 lambda bank: not bank.company_id or bank.company_id == move.company_id)
             move.partner_bank_id = bank_ids[0] if bank_ids else False
 
-    @api.depends('partner_id')
+    @api.depends('partner_id', 'company_id')
     def _compute_invoice_payment_term_id(self):
         for move in self:
+            move = move.with_company(move.company_id)
             if move.is_sale_document(include_receipts=True) and move.partner_id.property_payment_term_id:
                 move.invoice_payment_term_id = move.partner_id.property_payment_term_id
             elif move.is_purchase_document(include_receipts=True) and move.partner_id.property_supplier_payment_term_id:
