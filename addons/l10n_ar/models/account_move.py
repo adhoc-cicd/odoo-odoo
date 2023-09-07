@@ -24,7 +24,7 @@ class AccountMove(models.Model):
         ' identify the type of responsibilities that a person or a legal entity could have and that impacts in the'
         ' type of operations and requirements they need.')
 
-    l10n_ar_currency_rate = fields.Float(copy=False, digits=(16, 6), readonly=True, string="Currency Rate")
+    l10n_ar_currency_rate = fields.Float(copy=False, readonly=True, string="Currency Rate")
 
     # Mostly used on reports
     l10n_ar_afip_concept = fields.Selection(
@@ -144,8 +144,12 @@ class AccountMove(models.Model):
             if rec.company_id.currency_id == rec.currency_id:
                 rec.l10n_ar_currency_rate = 1.0
             elif not rec.l10n_ar_currency_rate:
-                rec.l10n_ar_currency_rate = rec.currency_id._convert(
-                    1.0, rec.company_id.currency_id, rec.company_id, rec.date, round=False)
+                rec.l10n_ar_currency_rate = self.env['res.currency']._get_conversion_rate(
+                    from_currency=rec.currency_id,
+                    to_currency=rec.company_id.currency_id,
+                    company=rec.company_id,
+                    date=rec.invoice_date,
+                )
 
     @api.onchange('partner_id')
     def _onchange_afip_responsibility(self):
