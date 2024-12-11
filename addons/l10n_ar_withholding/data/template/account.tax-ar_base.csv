@@ -114,3 +114,8 @@
 "","","","","","","","","","","","","","tax","invoice","base_retencion_iibb_az_sufrida","","",""
 "","","","","","","","","","","","","","base","refund","","","",""
 "","","","","","","","","","","","","","tax","refund","base_retencion_iibb_az_sufrida","","",""
+"base_tax_withholding_iibb_tais_incurred","IIBB WTH TAIS","IIBB withholding Tierra del Fuego","","4","percent","1","none","tax_group_withholding","True","customer","iibb_untaxed","base.state_ar_v","","","","Ret IIBB TAIS","Retención IIBB Tierra del Fuego",""
+"","","","","","","","","","","","","","base","invoice","","","",""
+"","","","","","","","","","","","","","tax","invoice","base_retencion_iibb_tf_sufrida","","",""
+"","","","","","","","","","","","","","base","refund","","","",""
+"","","","","","","","","","","","","","tax","refund","base_retencion_iibb_tf_sufrida","","",""
