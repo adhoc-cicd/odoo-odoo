@@ -13,13 +13,19 @@ class AccountMoveReversal(models.TransientModel):
     l10n_latam_document_number = fields.Char(string='Document Number')
     l10n_latam_manual_document_number = fields.Boolean(compute='_compute_l10n_latam_manual_document_number', string='Manual Number')
 
-    @api.depends('l10n_latam_document_type_id')
+    @api.depends('l10n_latam_document_type_id', 'journal_id')
     def _compute_l10n_latam_manual_document_number(self):
         self.l10n_latam_manual_document_number = False
-        for rec in self.filtered('move_ids'):
-            move = rec.move_ids[0]
-            if move.journal_id and move.journal_id.l10n_latam_use_documents:
-                rec.l10n_latam_manual_document_number = move._is_manual_document_number()
+        for rec in self:
+            refund = rec.env['account.move'].new({
+                'move_type': rec._reverse_type_map(rec.move_ids.move_type),
+                'journal_id': rec.journal_id.id,
+                'partner_id': rec.move_ids.partner_id.id,
+                'company_id': rec.move_ids.company_id.id,
+                'reversed_entry_id': rec.move_ids.id,
+            })
+            if rec.journal_id and rec.journal_id.l10n_latam_use_documents:
+                rec.l10n_latam_manual_document_number = refund._is_manual_document_number()
 
     @api.model
     def _reverse_type_map(self, move_type):
@@ -32,7 +38,7 @@ class AccountMoveReversal(models.TransientModel):
             'in_receipt': 'out_receipt'}
         return match.get(move_type)
 
-    @api.depends('l10n_latam_available_document_type_ids')
+    @api.depends('l10n_latam_available_document_type_ids', 'journal_id')
     def _compute_document_type(self):
         for record in self.filtered(
                 lambda x: not x.l10n_latam_document_type_id or
@@ -40,7 +46,7 @@ class AccountMoveReversal(models.TransientModel):
             document_types = record.l10n_latam_available_document_type_ids._origin
             record.l10n_latam_document_type_id = document_types[0] if document_types else False
 
-    @api.depends('move_ids', 'journal_id')
+    @api.depends('l10n_latam_available_document_type_ids', 'journal_id')
     def _compute_documents_info(self):
         self.l10n_latam_available_document_type_ids = False
         self.l10n_latam_use_documents = False
