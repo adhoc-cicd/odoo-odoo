@@ -1,6 +1,7 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from odoo import models, fields, api, _
 from odoo.exceptions import UserError, RedirectWarning, ValidationError
+from odoo.tools.misc import formatLang
 from dateutil.relativedelta import relativedelta
 import logging
 _logger = logging.getLogger(__name__)
@@ -334,13 +335,18 @@ class AccountMove(models.Model):
         base_lines = self.line_ids.filtered(lambda x: x.display_type == 'product')
         tax_lines = self.line_ids.filtered(lambda x: x.display_type == 'tax')
 
+        AccountTaxGroup = self.env['account.tax.group']
+        nat_int_tax_groups = AccountTaxGroup.search([('l10n_ar_tribute_afip_code', 'in', ['01', '04'])])
+        vat_tax_groups = AccountTaxGroup.search([('l10n_ar_vat_afip_code', '!=', False)])
+        both_tax_group_ids = nat_int_tax_groups.ids + vat_tax_groups.ids
+
         # Base lines.
         base_line_vals_list = [x._convert_to_tax_base_line_dict() for x in base_lines]
         if include_vat:
             for vals in base_line_vals_list:
                 vals['taxes'] = vals['taxes']\
                     .flatten_taxes_hierarchy()\
-                    .filtered(lambda tax: not tax.tax_group_id.l10n_ar_vat_afip_code)
+                    .filtered(lambda tax: tax.tax_group_id.id not in both_tax_group_ids)
 
         # Tax lines.
         tax_line_vals_list = [x._convert_to_tax_line_dict() for x in tax_lines]
@@ -348,7 +354,7 @@ class AccountMove(models.Model):
             tax_line_vals_list = [
                 x
                 for x in tax_line_vals_list
-                if not x['tax_repartition_line'].tax_id.tax_group_id.l10n_ar_vat_afip_code
+                if x['tax_repartition_line'].tax_id.tax_group_id.id not in both_tax_group_ids
             ]
 
         tax_totals = self.env['account.tax']._prepare_tax_totals(
@@ -357,10 +363,42 @@ class AccountMove(models.Model):
             tax_lines=tax_line_vals_list,
         )
 
+        temp = self.tax_totals
         if include_vat:
-            temp = self.tax_totals
             tax_totals['amount_total'] = temp['amount_total']
             tax_totals['formatted_amount_total'] = temp['formatted_amount_total']
+
+        # RG 5614/2024: Show ARCA VAT and Other National Internal Taxes
+        if self.l10n_latam_document_type_id.code in ['6', '7', '8']:
+
+            # Prepare the subtotals to show in the report
+            currency_symbol = self.currency_id.symbol
+            detail_info = {}
+
+            for item in temp['groups_by_subtotal'][_('Untaxed Amount')]:
+                tax_group_id = item.get('tax_group_id')
+                tax_amount = item['tax_group_amount']
+
+                if tax_group_id in nat_int_tax_groups.ids:
+                    key = 'other_taxes'
+                    name = _("Other National Ind. Taxes %s", currency_symbol)
+                elif tax_group_id in vat_tax_groups.ids:
+                    key = 'vat_taxes'
+                    name = _("VAT Content %s", currency_symbol)
+                else:
+                    continue  # If not belongs to the needed groups we ignore them
+
+                if key not in detail_info:
+                    if tax_amount != 0.0:
+                        detail_info[key] = {"name": name, "tax_amount": tax_amount}
+                else:
+                    detail_info[key]["tax_amount"] += tax_amount
+
+            # Format the amounts to show in the report
+            for _item, values in detail_info.items():
+                values.update({"formatted_amount_tax": formatLang(self.env, values["tax_amount"])})
+
+            tax_totals.update({"detail_ar_tax": list(detail_info.values())})
 
         return tax_totals
 
