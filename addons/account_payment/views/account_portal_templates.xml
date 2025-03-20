@@ -80,9 +80,8 @@
             <th/>
         </xpath>
         <xpath expr="//t[@t-foreach='invoices']/tr/td[last()]" position="after">
-            <td class="d-none d-lg-table-cell text-center">
+            <td t-if="invoice_data.get('installment_state', False) in ('next', 'overdue')">
                 <span
-                    t-if="invoice_data['installment_state'] in ('next', 'overdue')"
                     t-attf-class="{{'text-danger' if invoice_data['installment_state'] == 'overdue' else ''}}"
                     t-out="invoice_data['next_amount_to_pay']"
                     t-options="{'widget': 'monetary', 'display_currency': invoice.currency_id}"
