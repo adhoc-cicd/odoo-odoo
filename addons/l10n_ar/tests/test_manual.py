@@ -152,4 +152,22 @@ class TestManual(common.TestAr):
         })
         res2 = invoice2._l10n_ar_get_invoice_totals_for_report()
         self.assertEqual(res2.get('detail_ar_tax'), [
+            {'formatted_amount_tax': '0.00', 'name': 'VAT Content $', 'tax_amount': 0.00},
             {'formatted_amount_tax': '300.00', 'name': 'Other National Ind. Taxes $', 'tax_amount': 300.00}])
+
+    def test_18_invoice_b_tax_breakdown_3(self):
+        """ Display only Other Taxes (VAT taxes are 0 and non other taxes) """
+        invoice2 = self._create_invoice_from_dict({
+            'ref': 'test_invoice_22:  inal Consumer Invoice B with 0 only',
+            "move_type": 'out_invoice',
+            "partner_id": self.partner_cf,
+            "company_id": self.company_ri,
+            "invoice_date": "2021-03-20",
+            "invoice_line_ids": [
+                {'product_id': self.product_iva_105_perc, 'price_unit': 10000.0, 'quantity': 1,
+                    'tax_ids': [(6, 0, [self.tax_no_gravado.id])]},
+            ],
+        })
+        res2 = invoice2._l10n_ar_get_invoice_totals_for_report()
+        self.assertEqual(res2.get('detail_ar_tax'), [
+            {'formatted_amount_tax': '0.00', 'name': 'VAT Content $', 'tax_amount': 0.00}])
