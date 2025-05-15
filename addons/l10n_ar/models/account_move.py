@@ -394,7 +394,7 @@ class AccountMove(models.Model):
                         continue  # If not belongs to the needed groups we ignore them
 
                     if key not in detail_info:
-                        if tax_amount != 0.0:
+                        if tax_amount != 0.0 or _("VAT Content") in name:
                             detail_info[key] = {"name": name, "tax_amount": tax_amount}
                     else:
                         detail_info[key]["tax_amount"] += tax_amount
