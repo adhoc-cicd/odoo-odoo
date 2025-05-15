@@ -1,7 +1,10 @@
 # Part of Odoo. See LICENSE file for full copyright and licensing details.
 from . import common
 from odoo.tests import tagged
+
+from odoo import _
 from odoo.tools.float_utils import float_split_str
+from odoo.tools.misc import formatLang
 
 
 @tagged('post_install_l10n', '-at_install', 'post_install')
@@ -134,8 +137,16 @@ class TestManual(common.TestAr):
         })
         res1 = invoice1._l10n_ar_get_invoice_totals_for_report()
         self.assertEqual(res1.get('detail_ar_tax'), [
-            {'formatted_amount_tax': '868.51', 'name': 'VAT Content $', 'tax_amount': 868.51},
-            {'formatted_amount_tax': '142.20', 'name': 'Other National Ind. Taxes $', 'tax_amount': 142.20}])
+            {
+                'name': _('VAT Content $'),
+                'tax_amount': 868.51,
+                'formatted_amount_tax': formatLang(self.env, 868.51)
+            }, {
+                'name': _('Other National Ind. Taxes $'),
+                'tax_amount': 142.20,
+                'formatted_amount_tax': formatLang(self.env, 142.20)
+            },
+        ])
 
     def test_17_invoice_b_tax_breakdown_2(self):
         """ Display only Other Taxes (VAT taxes are 0) """
@@ -152,4 +163,35 @@ class TestManual(common.TestAr):
         })
         res2 = invoice2._l10n_ar_get_invoice_totals_for_report()
         self.assertEqual(res2.get('detail_ar_tax'), [
-            {'formatted_amount_tax': '300.00', 'name': 'Other National Ind. Taxes $', 'tax_amount': 300.00}])
+            {
+                'name': _('VAT Content $'),
+                'tax_amount': 0.00,
+                'formatted_amount_tax': formatLang(self.env, 0.00),
+            }, {
+                'name': _('Other National Ind. Taxes $'),
+                'tax_amount': 300.00,
+                'formatted_amount_tax': formatLang(self.env, 300.00)
+            },
+        ])
+
+    def test_18_invoice_b_tax_breakdown_3(self):
+        """ Display only Other Taxes (VAT taxes are 0 and non other taxes) """
+        invoice2 = self._create_invoice_from_dict({
+            'ref': 'test_invoice_22:  inal Consumer Invoice B with 0 only',
+            "move_type": 'out_invoice',
+            "partner_id": self.partner_cf,
+            "company_id": self.company_ri,
+            "invoice_date": "2021-03-20",
+            "invoice_line_ids": [
+                {'product_id': self.product_iva_105_perc, 'price_unit': 10000.0, 'quantity': 1,
+                    'tax_ids': [(6, 0, [self.tax_no_gravado.id])]},
+            ],
+        })
+        res2 = invoice2._l10n_ar_get_invoice_totals_for_report()
+        self.assertEqual(res2.get('detail_ar_tax'), [
+            {
+                'name': _('VAT Content $'),
+                'formatted_amount_tax': formatLang(self.env, 0.00),
+                'tax_amount': 0.00,
+            },
+        ])
