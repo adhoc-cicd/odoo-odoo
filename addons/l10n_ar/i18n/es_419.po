@@ -6,8 +6,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 18.0+e\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2025-06-09 11:55+0000\n"
-"PO-Revision-Date: 2025-06-09 11:55+0000\n"
+"POT-Creation-Date: 2025-07-22 09:30+0000\n"
+"PO-Revision-Date: 2025-07-22 09:30+0000\n"
 "Last-Translator: María Fernanda Alvarez Ramírez <mfar@odoo.com>\n"
 "Language-Team: \n"
 "Language: es_419\n"
@@ -2237,6 +2237,13 @@ msgstr "IVA"
 #: model:ir.model.fields,field_description:l10n_ar.field_account_tax_group__l10n_ar_vat_afip_code
 msgid "VAT AFIP Code"
 msgstr "Código AFIP de IVA"
+
+#. module: l10n_ar
+#. odoo-python
+#: code:addons/l10n_ar/models/account_move.py:0
+#, python-format
+msgid "VAT Content %s"
+msgstr "IVA Contenido %s"
 
 #. module: l10n_ar
 #: model:l10n_latam.document.type,name:l10n_ar.dc_a_rg1415
