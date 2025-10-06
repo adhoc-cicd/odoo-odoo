@@ -410,7 +410,6 @@ class AccountAccount(models.Model):
         self._compute_code()
 
     @api.depends_context('company')
-    @api.depends('code')
     def _compute_placeholder_code(self):
         self.placeholder_code = False
         for record in self:
