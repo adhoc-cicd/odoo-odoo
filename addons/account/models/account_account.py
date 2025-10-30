@@ -33,7 +33,10 @@ class AccountAccount(models.Model):
     @api.constrains('account_type')
     def _check_account_type_unique_current_year_earning(self):
         result = self._read_group(
-            domain=[('account_type', '=', 'equity_unaffected')],
+            domain=[
+                ("account_type", "=", "equity_unaffected"),
+                ("company_ids.active", "=", True),
+            ],
             groupby=['company_ids'],
             aggregates=['id:recordset'],
             having=[('__count', '>', 1)],
