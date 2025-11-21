@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+
+    <record id="demo_internal_taxes" model="account.tax">
+        <field name='name'>DEMO - Internal Taxes</field>
+        <field name='description'>Internal Taxes</field>
+        <field name='amount'>3</field>
+        <field name="amount_type">percent</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="country_id" ref="base.ar"/>
+        <field name="company_id" ref="base.company_ri"/>
+        <field name="tax_group_id" eval="ref(f'account.{ref('base.company_ri')}_tax_impuestos_internos')"/>
+    </record>
+
+    <record id="demo_other_taxes" model="account.tax">
+        <field name='name'>DEMO -Other Taxes</field>
+        <field name='description'>Other Taxes</field>
+        <field name='amount'>100</field>
+        <field name="amount_type">fixed</field>
+        <field name="type_tax_use">purchase</field>
+        <field name="country_id" ref="base.ar"/>
+        <field name="company_id" ref="base.company_ri"/>
+        <field name="tax_group_id" eval="ref(f'account.{ref('base.company_ri')}_tax_group_otros_impuestos')"/>
+    </record>
+
+</odoo>
+
