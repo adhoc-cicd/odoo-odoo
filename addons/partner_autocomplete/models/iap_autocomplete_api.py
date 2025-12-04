@@ -17,8 +17,8 @@ class IapAutocompleteEnrichAPI(models.AbstractModel):
 
     @api.model
     def _contact_iap(self, local_endpoint, action, params, timeout=15):
-        runbot_test = not self.env["ir.config_parameter"].sudo().get_param("saas_client.database_uuid", False)
-        if self.env.registry.in_test_mode() or runbot_test:
+        is_runbot_env = not self.env["ir.config_parameter"].sudo().get_param("saas_client.database_uuid", False)
+        if self.env.registry.in_test_mode() or is_runbot_env:
             raise exceptions.ValidationError(_('Test mode'))
         account = self.env['iap.account'].get('partner_autocomplete')
         if not account.account_token:
