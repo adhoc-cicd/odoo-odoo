@@ -5333,13 +5333,13 @@ class BaseModel(metaclass=MetaModel):
             _logger.warning(
                 "Context key 'force_company' is no longer supported. "
                 "Use with_company(company) instead.",
-                stack_info=True,
+                stack_info=False,
             )
         if (args and 'company' in args[0]) or 'company' in kwargs:
             _logger.warning(
                 "Context key 'company' is not recommended, because "
                 "of its special meaning in @depends_context.",
-                stack_info=True,
+                stack_info=False,
             )
         context = dict(args[0] if args else self._context, **kwargs)
         if 'allowed_company_ids' not in context and 'allowed_company_ids' in self._context:
